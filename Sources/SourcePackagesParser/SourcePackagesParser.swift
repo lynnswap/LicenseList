@@ -37,7 +37,7 @@ final class SourcePackagesParser {
         if let data = try? Data(contentsOf: extraURL),
            let extras = try? JSONDecoder().decode([ExtraLicense].self, from: data) {
             libraries += extras.map {
-                Library(name: $0.name,url: "(local)",licenseBody: $0.licenseBody)
+                Library(name: $0.name, url: $0.url, licenseBody: $0.licenseBody)
             }
         }
         // Export LicenseList.swift
