@@ -53,6 +53,8 @@ for case let url as URL in enumerator where url.lastPathComponent == "Package.sw
            let match = config[range].split(separator: "=").last {
             print("match",match)
             urlString = match.trimmingCharacters(in: .whitespaces)
+                .components(separatedBy: "/").last!
+                .replacingOccurrences(of: ".git", with: "")
         }
         items.append(.init(name: pkgDir.lastPathComponent, url: urlString, licenseBody: text))
     }
