@@ -7,5 +7,6 @@
 
 struct ExtraLicense: Decodable {
     let name: String
+    let url: String
     let licenseBody: String
 }

@@ -9,6 +9,7 @@ import Foundation
 
 struct Item: Codable {
     let name: String
+    let url: String
     let licenseBody: String
 }
 
@@ -41,10 +42,16 @@ for case let url as URL in enumerator where url.lastPathComponent == "Package.sw
                                           includingPropertiesForKeys: nil)
         .first(where: { ["license","licence","copying","notice"]
             .contains($0.deletingPathExtension().lastPathComponent.lowercased()) })
-
     if let licURL = cand,
        let text = try? String(contentsOf: licURL, encoding: .utf8) {
-        items.append(.init(name: pkgDir.lastPathComponent, licenseBody: text))
+        let gitConfig = pkgDir.appending(path: ".git/config")
+        var urlString = pkgDir.path
+        if let config = try? String(contentsOf: gitConfig, encoding: .utf8),
+           let range = config.range(of: #"url\s*=\s*([^\n]+)"#, options: .regularExpression),
+           let match = config[range].split(separator: "=").last {
+            urlString = match.trimmingCharacters(in: .whitespaces)
+        }
+        items.append(.init(name: pkgDir.lastPathComponent, url: urlString, licenseBody: text))
     }
 }
 
