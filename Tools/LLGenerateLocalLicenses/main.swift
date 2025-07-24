@@ -19,8 +19,7 @@ let args = CommandLine.arguments
 guard let rootIdx = args.firstIndex(of: Arg.root),
       let outIdx  = args.firstIndex(of: Arg.out),
       args.indices.contains(rootIdx+1), args.indices.contains(outIdx+1) else {
-    let usage = "Usage: LLGenerateLocalLicenses --workspace <dir> --output <file>\n"
-    FileHandle.standardError.write(Data(usage.utf8))
+    fputs("Usage: LLGenerateLocalLicenses --workspace <dir> --output <file>\n", stderr)
     exit(1)
 }
 let workspace = URL(fileURLWithPath: args[rootIdx+1])
