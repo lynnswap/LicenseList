@@ -43,30 +43,35 @@ Everything happens automatically during a normal Xcode build.
 3. Paste the script below (bash):
 
 ```bash
-# === Generate licenses for local SwiftPM packages =========================
-
+#!/bin/bash
 set -euo pipefail
-echo "🏗  LicenseList: collecting local package licenses…"
 
-## 1) Paths -----------------------------------------------------------------
+echo "🏗️  LicenseList: collecting local package licenses…"
+
+# ── 1) Paths ───────────────────────────────────────────────────────────────
 DERIVED_DATA="${BUILD_DIR%/Build/*}"
 SOURCE_PKGS="${DERIVED_DATA}/SourcePackages"
 LICENSELIST_PATH="${SOURCE_PKGS}/checkouts/LicenseList"
 
-## 2) Build LLGenerateLocalLicenses in a *separate* folder to avoid DB locks
+# Build products go to a separate folder to avoid .build DB locks
 CLI_BUILD_DIR="${DERIVED_DATA}/_LLCLI_Build"
 mkdir -p "$CLI_BUILD_DIR"
 
-swift build \
+# ── 2) Build LLGenerateLocalLicenses with the *macOS* SDK ──────────────────
+# Xcode passes an iOS SDK to every build phase; we must override it.
+unset SDKROOT                                   # drop the iOS SDK path
+export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
+
+xcrun --sdk macosx swift build \
   --package-path "$LICENSELIST_PATH" \
   --build-path   "$CLI_BUILD_DIR" \
   -c release \
   --product LLGenerateLocalLicenses
 
+# ── 3) Run the CLI ─────────────────────────────────────────────────────────
 CLI_BIN="$CLI_BUILD_DIR/release/LLGenerateLocalLicenses"
 EXTRA_JSON="$SOURCE_PKGS/local-licenses.json"
 
-## 3) Run the CLI -----------------------------------------------------------
 "$CLI_BIN" \
   --workspace "$SRCROOT" \
   --output    "$EXTRA_JSON"
