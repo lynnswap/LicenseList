@@ -20,16 +20,29 @@ final class SourcePackagesParser {
         // Extract Libraries
         let checkoutsURL = sourcePackagesURL.appending(path: "checkouts")
         let libraries: [Library] = workspaceState.object.dependencies.compactMap { dependency in
-            let repositoryName = dependency.packageRef.location
-                .components(separatedBy: "/").last!
-                .replacingOccurrences(of: ".git", with: "")
-            let directoryURL = checkoutsURL.appending(path: repositoryName)
+            let location = dependency.packageRef.location
+            let directoryURL: URL
+            if dependency.packageRef.kind == "remoteSourceControl" {
+                let repositoryName = location
+                    .components(separatedBy: "/").last!
+                    .replacingOccurrences(of: ".git", with: "")
+                directoryURL = checkoutsURL.appending(path: repositoryName)
+            } else if let url = URL(string: location), url.isFileURL {
+                directoryURL = url
+            } else {
+                let pathURL = URL(filePath: location)
+                if pathURL.path.hasPrefix("/") {
+                    directoryURL = pathURL
+                } else {
+                    directoryURL = sourcePackagesURL.appending(path: location)
+                }
+            }
             guard let licenseBody = extractLicenseBody(directoryURL) else {
                 return nil
             }
             return Library(
                 name: dependency.packageRef.name,
-                url: dependency.packageRef.location,
+                url: location,
                 licenseBody: licenseBody
             )
         }

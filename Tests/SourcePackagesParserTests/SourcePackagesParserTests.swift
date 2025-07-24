@@ -135,5 +135,28 @@ struct SourcePackagesParserTests {
             #expect(urls[index].hasSuffix("\"https://github.com/dummy/Package-\(key).git\""))
         }
     }
+
+    @Test("Parse local package location")
+    func parse_local_package() throws {
+        let sourcePackagesURL = try #require(directoryURL("Local"))
+        let licenseListURL = sourcePackagesURL.appending(path: "LicenseList.swift")
+
+        let sppBinary = productsDirectory.appending(path: "spp")
+        let process = Process()
+        process.executableURL = sppBinary
+        process.arguments = [
+            licenseListURL.path(),
+            sourcePackagesURL.path()
+        ]
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        try process.run()
+        process.waitUntilExit()
+
+        #expect(process.terminationStatus == 0)
+
+        let text = try String(contentsOf: licenseListURL)
+        #expect(text.contains("LocalPackage License"))
+    }
 }
 #endif

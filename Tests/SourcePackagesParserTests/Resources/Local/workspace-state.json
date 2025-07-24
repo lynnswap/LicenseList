@@ -1,0 +1,15 @@
+{
+  "object" : {
+    "dependencies" : [
+        {
+            "packageRef" : {
+                "identity" : "localpackage",
+                "kind" : "fileSystem",
+                "location" : "LocalPackage",
+                "name" : "LocalPackage"
+            }
+        }
+    ]
+  },
+  "version" : 7
+}
