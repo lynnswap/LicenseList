@@ -29,13 +29,10 @@ final class SourcePackagesParser {
                 directoryURL = checkoutsURL.appending(path: repositoryName)
             } else if let url = URL(string: location), url.isFileURL {
                 directoryURL = url
+            } else if location.hasPrefix("/") {
+                directoryURL = URL(fileURLWithPath: location)
             } else {
-                let pathURL = URL(filePath: location)
-                if pathURL.path.hasPrefix("/") {
-                    directoryURL = pathURL
-                } else {
-                    directoryURL = sourcePackagesURL.appending(path: location)
-                }
+                directoryURL = sourcePackagesURL.appending(path: location)
             }
             guard let licenseBody = extractLicenseBody(directoryURL) else {
                 return nil
