@@ -43,7 +43,7 @@ for case let url as URL in enumerator where url.lastPathComponent == "Package.sw
                                           includingPropertiesForKeys: nil)
         .first(where: { ["license","licence","copying","notice"]
             .contains($0.deletingPathExtension().lastPathComponent.lowercased()) })
-
+    print("Local package licenses 1")
     if let licURL = cand,
        let text = try? String(contentsOf: licURL, encoding: .utf8) {
         let gitConfig = pkgDir.appending(path: ".git/config")
