@@ -113,6 +113,13 @@ struct ContentView: View {
 }
 ```
 
+## How to use a specific `SourcePackages` path
+
+In a CI environment, you may sometimes specify a non-default path for the `SourcePackages` directory.
+In such cases, to prevent the `PrepareLicenseList` plugin from failing, you must run `xcodebuild` with the `PLL_SOURCE_PACKAGES_PATH` environment variable set to the **absolute path** of that directory.
+
+More detail: [How LicenseList Works](https://cybozu.github.io/LicenseList/documentation/licenselist/howlicenselistworks)
+
 ## Contributing to LicenseList
 
 Contributions to LicenseList are welcomed and encouraged! Please see the [Contributing Guide](/CONTRIBUTING.md).
