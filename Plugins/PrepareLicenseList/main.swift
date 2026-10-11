@@ -14,7 +14,7 @@ struct PrepareLicenseList: BuildToolPlugin {
             throw SourcePackagesNotFoundError()
         }
         let existsSourcePackagesInDirectory = FileManager.default
-            .fileExists(atPath: url.appending(path: "SourcePackages").path())
+            .fileExists(atPath: url.appending(path: "SourcePackages").path(percentEncoded: false))
         return isDirectory && existsSourcePackagesInDirectory
     }
 
@@ -37,8 +37,8 @@ struct PrepareLicenseList: BuildToolPlugin {
             displayName: "Prepare LicenseList",
             executable: executableURL,
             arguments: [
-                outputURL.absoluteURL.path(),
-                sourcePackagesURL.absoluteURL.path(),
+                outputURL.absoluteURL.path(percentEncoded: false),
+                sourcePackagesURL.absoluteURL.path(percentEncoded: false),
             ],
             outputFiles: [
                 outputURL

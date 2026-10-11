@@ -40,8 +40,8 @@ struct SourcePackagesParserTests {
         let process = Process()
         process.executableURL = sppBinary
         process.arguments = [
-            couldNotReadURL.appending(path: "LicenseList.swift").path(),
-            couldNotReadURL.path()
+            couldNotReadURL.appending(path: "LicenseList.swift").path(percentEncoded: false),
+            couldNotReadURL.path(percentEncoded: false)
         ]
         let pipe = Pipe()
         process.standardOutput = pipe
@@ -63,8 +63,8 @@ struct SourcePackagesParserTests {
         let process = Process()
         process.executableURL = sppBinary
         process.arguments = [
-            noLibrariesURL.appending(path: "LicenseList.swift").path(),
-            noLibrariesURL.path()
+            noLibrariesURL.appending(path: "LicenseList.swift").path(percentEncoded: false),
+            noLibrariesURL.path(percentEncoded: false)
         ]
         let pipe = Pipe()
         process.standardOutput = pipe
@@ -84,6 +84,37 @@ struct SourcePackagesParserTests {
     )
     func failed_to_export_license_list() {}
 
+    @Test("File paths containing spaces, percent signs, and Unicode preserve the license entries.")
+    func pathsWithEscapedURLCharacters() throws {
+        let fm = FileManager.default
+        let temporaryURL = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        try fm.createDirectory(at: temporaryURL, withIntermediateDirectories: true)
+        defer {
+            do { try fm.removeItem(at: temporaryURL) }
+            catch { Issue.record(error) }
+        }
+        let fixtureURL = try #require(directoryURL("SourcePackages"))
+        let sourcePackagesURL = temporaryURL.appending(path: "Source Packages 100% 日本語")
+        try fm.copyItem(at: fixtureURL, to: sourcePackagesURL)
+        let outputURL = temporaryURL.appending(path: "License List 100%.swift")
+        try "previous output".write(to: outputURL, atomically: true, encoding: .utf8)
+
+        let process = Process()
+        process.executableURL = productsDirectory.appending(path: "spp")
+        process.arguments = [outputURL.path(percentEncoded: false), sourcePackagesURL.path(percentEncoded: false)]
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        try process.run()
+        process.waitUntilExit()
+        let actual = String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+
+        #expect(process.terminationStatus == 0)
+        #expect(actual == ["A", "B", "C", "D", "E"].map { "Package-\($0)" }.joined(separator: "\n") + "\n")
+        let generated = try String(contentsOf: outputURL, encoding: .utf8)
+        #expect(generated.contains("enum SPPLibrary"))
+        #expect(!generated.contains("previous output"))
+    }
+
     @Test("If the workspace-state.json is full, the command exits normally.")
     func run() throws {
         let sourcePackagesURL = try #require(directoryURL("SourcePackages"))
@@ -93,8 +124,8 @@ struct SourcePackagesParserTests {
         let process = Process()
         process.executableURL = sppBinary
         process.arguments = [
-            licenseListURL.path(),
-            sourcePackagesURL.path()
+            licenseListURL.path(percentEncoded: false),
+            sourcePackagesURL.path(percentEncoded: false)
         ]
         let pipe = Pipe()
         process.standardOutput = pipe
