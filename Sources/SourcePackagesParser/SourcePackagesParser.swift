@@ -46,7 +46,7 @@ final class SourcePackagesParser {
 
     private func extractLicenseBody(_ directoryURL: URL) -> String? {
         let fm = FileManager.default
-        let contents = (try? fm.contentsOfDirectory(atPath: directoryURL.path())) ?? []
+        let contents = (try? fm.contentsOfDirectory(atPath: directoryURL.path(percentEncoded: false))) ?? []
         let licenseURL = contents
             .map { directoryURL.appending(path: $0) }
             .filter { contentURL in
@@ -55,7 +55,7 @@ final class SourcePackagesParser {
                     return false
                 }
                 var isDirectory: ObjCBool = false
-                fm.fileExists(atPath: contentURL.path(), isDirectory: &isDirectory)
+                fm.fileExists(atPath: contentURL.path(percentEncoded: false), isDirectory: &isDirectory)
                 return isDirectory.boolValue == false
             }
             .first
@@ -121,7 +121,7 @@ final class SourcePackagesParser {
 
         text = "enum SPPLibrary: Hashable, CaseIterable {\(text.indented().nested())}\n"
 
-        if FileManager.default.fileExists(atPath: outputURL.path()) {
+        if FileManager.default.fileExists(atPath: outputURL.path(percentEncoded: false)) {
             try FileManager.default.removeItem(at: outputURL)
         }
 
